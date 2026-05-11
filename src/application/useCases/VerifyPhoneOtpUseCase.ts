@@ -62,7 +62,17 @@ export class VerifyPhoneOtpUseCase {
       throw new AppError(this.authErrorMapper.map(verified.error), 400);
     }
 
-    const signUp = await this.authRepository.signUp({
+    const verifiedUser = verified.data?.user;
+    const userId =
+      verifiedUser && typeof verifiedUser === "object" && "id" in verifiedUser
+        ? String((verifiedUser as { id: string }).id)
+        : "";
+    if (!userId) {
+      throw new AppError("OTP verified but user id was missing. Please try again.", 500);
+    }
+
+    const activated = await this.authRepository.activateUserAfterPhoneOtp({
+      existingAuthUserId: userId,
       email: pending.email,
       password: this.secretCipher.decrypt(pending.encryptedPassword),
       metadata: {
@@ -72,7 +82,7 @@ export class VerifyPhoneOtpUseCase {
       },
     });
 
-    if (signUp.error) throw new AppError(this.authErrorMapper.map(signUp.error), 400);
+    if (activated.error) throw new AppError(this.authErrorMapper.map(activated.error), 400);
     await this.pendingRepository.deleteById(pending.id);
     authLog("VERIFY OTP RESULT", "INFO", {
       channel: "sms",
@@ -83,8 +93,8 @@ export class VerifyPhoneOtpUseCase {
     });
 
     return {
-      message: "Phone OTP verified. Registration completed.",
-      user: signUp.data?.user ?? verified.data?.user ?? null,
+      message: "Phone verified successfully",
+      user: activated.data?.user ?? verifiedUser ?? null,
     };
   }
 }

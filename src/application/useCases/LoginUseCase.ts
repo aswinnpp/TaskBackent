@@ -6,12 +6,14 @@ import { Email } from "../../domain/valueObjects/Email";
 import { Password } from "../../domain/valueObjects/Password";
 import { AppError } from "../services/AppError";
 import { AuthErrorMapper } from "../services/AuthErrorMapper";
+import { AuthPolicy } from "../services/AuthPolicy";
 
 @injectable()
 export class LoginUseCase {
   constructor(
     @inject(TYPES.AuthRepository) private readonly authRepository: IAuthRepository,
-    @inject(TYPES.AuthErrorMapper) private readonly authErrorMapper: AuthErrorMapper
+    @inject(TYPES.AuthErrorMapper) private readonly authErrorMapper: AuthErrorMapper,
+    @inject(TYPES.AuthPolicy) private readonly authPolicy: AuthPolicy
   ) {}
 
   async execute(input: LoginDto): Promise<{
@@ -26,6 +28,14 @@ export class LoginUseCase {
     if (result.error || !result.data) {
       throw new AppError(this.authErrorMapper.map(result.error), 400);
     }
+
+    try {
+      this.authPolicy.ensurePhoneVerifiedAuthUser(result.data.user);
+    } catch (e) {
+      await this.authRepository.signOut();
+      throw e;
+    }
+
     return result.data;
   }
 }

@@ -220,18 +220,21 @@ export class SupabaseAuthRepository implements IAuthRepository {
     return {};
   }
 
-  async signUp(input: {
+  async activateUserAfterPhoneOtp(input: {
+    existingAuthUserId: string;
     email: string;
     password: string;
     metadata: Record<string, unknown>;
   }): Promise<RepositoryResult<{ user: unknown | null }>> {
-    const { data, error } = await supabaseClient.auth.signUp({
+    const { data, error } = await supabaseAdminClient.auth.admin.updateUserById(input.existingAuthUserId, {
       email: input.email,
       password: input.password,
-      options: { data: input.metadata },
+      email_confirm: true,
+      phone_confirm: true,
+      user_metadata: input.metadata,
     });
     if (error) return { error: error.message };
-    return { data: { user: data.user || null } };
+    return { data: { user: data.user ?? null } };
   }
 }
 

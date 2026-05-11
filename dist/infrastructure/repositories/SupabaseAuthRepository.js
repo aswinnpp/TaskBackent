@@ -212,15 +212,17 @@ let SupabaseAuthRepository = class SupabaseAuthRepository {
             return { error: error.message };
         return {};
     }
-    async signUp(input) {
-        const { data, error } = await supabaseClient_1.supabaseClient.auth.signUp({
+    async activateUserAfterPhoneOtp(input) {
+        const { data, error } = await supabaseAdminClient_1.supabaseAdminClient.auth.admin.updateUserById(input.existingAuthUserId, {
             email: input.email,
             password: input.password,
-            options: { data: input.metadata },
+            email_confirm: true,
+            phone_confirm: true,
+            user_metadata: input.metadata,
         });
         if (error)
             return { error: error.message };
-        return { data: { user: data.user || null } };
+        return { data: { user: data.user ?? null } };
     }
 };
 exports.SupabaseAuthRepository = SupabaseAuthRepository;

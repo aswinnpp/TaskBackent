@@ -19,10 +19,12 @@ const Email_1 = require("../../domain/valueObjects/Email");
 const Password_1 = require("../../domain/valueObjects/Password");
 const AppError_1 = require("../services/AppError");
 const AuthErrorMapper_1 = require("../services/AuthErrorMapper");
+const AuthPolicy_1 = require("../services/AuthPolicy");
 let LoginUseCase = class LoginUseCase {
-    constructor(authRepository, authErrorMapper) {
+    constructor(authRepository, authErrorMapper, authPolicy) {
         this.authRepository = authRepository;
         this.authErrorMapper = authErrorMapper;
+        this.authPolicy = authPolicy;
     }
     async execute(input) {
         const email = new Email_1.Email(input.email).getValue();
@@ -30,6 +32,13 @@ let LoginUseCase = class LoginUseCase {
         const result = await this.authRepository.signInWithPassword(email, password);
         if (result.error || !result.data) {
             throw new AppError_1.AppError(this.authErrorMapper.map(result.error), 400);
+        }
+        try {
+            this.authPolicy.ensurePhoneVerifiedAuthUser(result.data.user);
+        }
+        catch (e) {
+            await this.authRepository.signOut();
+            throw e;
         }
         return result.data;
     }
@@ -39,5 +48,7 @@ exports.LoginUseCase = LoginUseCase = __decorate([
     (0, inversify_1.injectable)(),
     __param(0, (0, inversify_1.inject)(types_1.TYPES.AuthRepository)),
     __param(1, (0, inversify_1.inject)(types_1.TYPES.AuthErrorMapper)),
-    __metadata("design:paramtypes", [Object, AuthErrorMapper_1.AuthErrorMapper])
+    __param(2, (0, inversify_1.inject)(types_1.TYPES.AuthPolicy)),
+    __metadata("design:paramtypes", [Object, AuthErrorMapper_1.AuthErrorMapper,
+        AuthPolicy_1.AuthPolicy])
 ], LoginUseCase);

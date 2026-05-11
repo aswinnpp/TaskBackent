@@ -17,7 +17,7 @@ let AuthErrorMapper = class AuthErrorMapper {
             return "Incorrect email or password";
         }
         if (lower.includes("email not confirmed")) {
-            return "Please verify your email before logging in";
+            return "Complete phone verification during signup before logging in";
         }
         return message;
     }

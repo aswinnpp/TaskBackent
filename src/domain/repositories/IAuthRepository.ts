@@ -30,7 +30,12 @@ export interface IAuthRepository {
     code: string;
   }): Promise<RepositoryResult<{ user: unknown | null }>>;
   resendSignupVerification(email: string, redirectUrl?: string): Promise<RepositoryResult<void>>;
-  signUp(input: {
+  /**
+   * After SMS verifyOtp succeeds, the same Supabase user (phone identity) is updated
+   * with email + password and confirmed flags — no separate signup user, no email verification mail.
+   */
+  activateUserAfterPhoneOtp(input: {
+    existingAuthUserId: string;
     email: string;
     password: string;
     metadata: Record<string, unknown>;

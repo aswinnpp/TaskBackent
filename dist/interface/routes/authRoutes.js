@@ -22,9 +22,6 @@ router.post("/forgot-password", (0, asyncHandler_1.asyncHandler)(controller.hand
 router.post("/reset-password", (0, asyncHandler_1.asyncHandler)(controller.handleResetPassword));
 router.post("/refresh-token", (0, asyncHandler_1.asyncHandler)(controller.handleRefreshToken));
 router.post("/logout", (0, asyncHandler_1.asyncHandler)(controller.handleLogout));
-router.post("/resend-email-verification", (0, asyncHandler_1.asyncHandler)(controller.handleResendEmailVerification));
-router.post("/send-email-otp", rateLimiters_1.otpSendLimiter, (0, asyncHandler_1.asyncHandler)(controller.handleSendEmailOtp));
-router.post("/verify-email-otp", rateLimiters_1.otpVerifyLimiter, (0, asyncHandler_1.asyncHandler)(controller.handleVerifyEmailOtp));
 router.post("/send-phone-otp", rateLimiters_1.otpSendLimiter, (0, asyncHandler_1.asyncHandler)(controller.handleSendPhoneOtp));
 router.post("/verify-phone-otp", rateLimiters_1.otpVerifyLimiter, (0, asyncHandler_1.asyncHandler)(controller.handleVerifyPhoneOtp));
 router.get("/profile", authMiddleware_1.authMiddleware, (0, asyncHandler_1.asyncHandler)(controller.handleGetProfile));

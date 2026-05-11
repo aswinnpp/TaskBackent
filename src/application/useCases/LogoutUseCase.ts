@@ -12,8 +12,7 @@ export class LogoutUseCase {
   ) {}
 
   async execute(input: { accessToken?: string; refreshToken?: string }): Promise<void> {
-    // Best-effort logout. The frontend should always clear local tokens.
-    // If we have both tokens, we can setSession then signOut to invalidate current session.
+    
     if (input?.accessToken && input?.refreshToken) {
       const set = await this.authRepository.setSession(input.accessToken, input.refreshToken);
       if (set.error) throw new AppError(this.authErrorMapper.map(set.error), 400);

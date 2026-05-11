@@ -26,10 +26,9 @@ let ForgotPasswordUseCase = class ForgotPasswordUseCase {
     }
     async execute(input) {
         const email = new Email_1.Email(input.email).getValue();
-        const fallbackRedirect = env_1.env.publicBaseUrl && env_1.env.publicBaseUrl.startsWith("https://")
-            ? `${env_1.env.publicBaseUrl.replace(/\/+$/, "")}/password-reset`
-            : undefined;
-        const result = await this.authRepository.sendPasswordResetEmail(email, input.redirectUrl || fallbackRedirect);
+        // Prefer explicit client redirect, then mobile deep link for reset password only.
+        const redirectTo = input.redirectUrl || env_1.env.passwordResetRedirectTo;
+        const result = await this.authRepository.sendPasswordResetEmail(email, redirectTo);
         if (result.error)
             throw new AppError_1.AppError(this.authErrorMapper.map(result.error), 400);
     }

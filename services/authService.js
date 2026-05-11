@@ -1,15 +1,4 @@
-/**
- * Beginner-friendly auth helpers for:
- * Signup → send phone OTP → verify OTP → create user (only after OTP succeeds).
- *
- * This file is plain JavaScript and does NOT import any frontend code.
- *
- * Required env (backend/.env):
- * - SUPABASE_URL
- * - SUPABASE_ANON_KEY
- * - SUPABASE_SERVICE_ROLE_KEY
- * - PENDING_SIGNUP_SECRET
- */
+
 
 const path = require("path");
 const crypto = require("crypto");
@@ -114,13 +103,6 @@ async function phoneExists(admin, phoneE164) {
   return { ok: true, exists };
 }
 
-/**
- * SIGNUP STEP:
- * - Validate inputs
- * - Save pending signup row
- * - Send phone OTP using Supabase
- * - DOES NOT create user yet
- */
 async function startSignupWithPhoneOtp({ email, phone, password }) {
   const e = validateEmail(email);
   const ph = validatePhone(phone);
@@ -166,13 +148,7 @@ async function startSignupWithPhoneOtp({ email, phone, password }) {
   return { ok: true, message: "OTP sent to your phone.", phone: ph.value };
 }
 
-/**
- * VERIFY OTP STEP:
- * - Verify SMS OTP using Supabase
- * - ONLY after success, create user using email+password
- * - Delete pending row
- * - Returns success message (frontend should redirect to Login)
- */
+
 async function verifyOtpAndCreateUser({ phone, otp }) {
   const ph = validatePhone(phone);
   const code = String(otp || "").trim();

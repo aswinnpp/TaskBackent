@@ -17,10 +17,12 @@ const inversify_1 = require("inversify");
 const types_1 = require("../di/types");
 const AppError_1 = require("../services/AppError");
 const AuthErrorMapper_1 = require("../services/AuthErrorMapper");
+const AuthPolicy_1 = require("../services/AuthPolicy");
 let RefreshTokenUseCase = class RefreshTokenUseCase {
-    constructor(authRepository, authErrorMapper) {
+    constructor(authRepository, authErrorMapper, authPolicy) {
         this.authRepository = authRepository;
         this.authErrorMapper = authErrorMapper;
+        this.authPolicy = authPolicy;
     }
     async execute(input) {
         if (!input?.refreshToken)
@@ -28,6 +30,13 @@ let RefreshTokenUseCase = class RefreshTokenUseCase {
         const result = await this.authRepository.refreshSession(input.refreshToken);
         if (result.error || !result.data)
             throw new AppError_1.AppError(this.authErrorMapper.map(result.error), 400);
+        try {
+            this.authPolicy.ensurePhoneVerifiedAuthUser(result.data.user);
+        }
+        catch (e) {
+            await this.authRepository.signOut();
+            throw e;
+        }
         return result.data;
     }
 };
@@ -36,5 +45,7 @@ exports.RefreshTokenUseCase = RefreshTokenUseCase = __decorate([
     (0, inversify_1.injectable)(),
     __param(0, (0, inversify_1.inject)(types_1.TYPES.AuthRepository)),
     __param(1, (0, inversify_1.inject)(types_1.TYPES.AuthErrorMapper)),
-    __metadata("design:paramtypes", [Object, AuthErrorMapper_1.AuthErrorMapper])
+    __param(2, (0, inversify_1.inject)(types_1.TYPES.AuthPolicy)),
+    __metadata("design:paramtypes", [Object, AuthErrorMapper_1.AuthErrorMapper,
+        AuthPolicy_1.AuthPolicy])
 ], RefreshTokenUseCase);
